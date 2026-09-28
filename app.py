@@ -35,7 +35,7 @@ with st.sidebar:
     st.image("logo.jpg", width=120)
     st.markdown("### Rhythm IT Helpdesk")
     
-    # New Chat Button (ഇത് എത്ര സ്ക്രോൾ ചെയ്താലും ഇവിടെത്തന്നെ കാണും)
+    # New Chat Button 
     if st.button("🔄 New Chat / പുതിയ ചോദ്യം", use_container_width=True):
         st.session_state.messages = []
         st.session_state.chat_session = model.start_chat(history=[])
@@ -43,8 +43,19 @@ with st.sidebar:
         
     st.markdown("---")
     
-    # സ്ക്രീൻഷോട്ട് അപ്‌ലോഡർ സൈഡ്‌ബാറിലേക്ക് മാറ്റി
+    # സ്ക്രീൻഷോട്ട് അപ്‌ലോഡർ 
     uploaded_file = st.file_uploader("Upload Screenshot (Optional) / സ്ക്രീൻഷോട്ട് നൽകാൻ", type=["jpg", "jpeg", "png"])
+    
+    st.markdown("---")
+    
+    # പുതിയതായി ചേർത്ത കോൺടാക്ട് വിവരങ്ങൾ (Contact Info)
+    st.markdown("### 📞 Contact for Services")
+    st.markdown("""
+    **Rhythm Computer Solutions**  
+    📱 +91 9895123809  
+    📱 +91 7559923809  
+    📧 rythmcomputerpkd@gmail.com
+    """)
     
     st.markdown("---")
     
@@ -75,7 +86,6 @@ if prompt := st.chat_input("Type your problem here / നിങ്ങളുടെ
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        # പ്രധാന സ്ക്രീനിൽ മറ്റ് തടസ്സങ്ങൾ ഇല്ലാത്തതിനാൽ പ്രൊസസിംഗ് ഇപ്പോൾ വ്യക്തമായി കാണാം
         with st.spinner("Finding the best solution... / ഉത്തരം കണ്ടെത്തുന്നു..."):
             try:
                 if uploaded_file is not None:
