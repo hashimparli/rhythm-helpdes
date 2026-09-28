@@ -21,14 +21,46 @@ model = genai.GenerativeModel('gemini-3.8-flash', system_instruction=system_inst
 # 1. Page Configuration
 st.set_page_config(page_title="Rhythm IT Helpdesk", page_icon="logo.jpg", layout="centered")
 
-# 2. Chat History Initializing
+# 2. Modern Colorful CSS & Hiding Deploy Buttons 
+st.markdown("""
+<style>
+    /* 기존 CSS (ബട്ടൺ, ടെക്സ്റ്റ് ബോക്സ്) */
+    .stButton>button {
+        background-color: #0033cc;
+        color: white;
+        border-radius: 8px;
+        padding: 10px 24px;
+        font-weight: bold;
+        border: none;
+        transition: 0.3s;
+        width: 100%;
+    }
+    .stButton>button:hover {
+        background-color: #002299;
+        color: white;
+        box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
+    }
+    .stTextInput>div>div>input {
+        border-radius: 8px;
+        border: 1.5px solid #0033cc;
+    }
+    
+    /* Fork, GitHub തുടങ്ങിയവ ഒളിപ്പിക്കാനുള്ള പുതിയ കോഡ് */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+</style>
+""", unsafe_allow_html=True)
+
+
+# 3. Chat History Initializing
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "chat_session" not in st.session_state:
     st.session_state.chat_session = model.start_chat(history=[])
 
 # ---------------------------------------------------------
-# 3. SIDEBAR (എപ്പോഴും സ്ക്രീനിൽ കാണാനുള്ള ഭാഗം)
+# 4. SIDEBAR (എപ്പോഴും സ്ക്രീനിൽ കാണാനുള്ള ഭാഗം)
 # ---------------------------------------------------------
 with st.sidebar:
     # ലോഗോയും പേരും
@@ -67,7 +99,7 @@ with st.sidebar:
     st.markdown("<p style='text-align: center; color: gray; font-size: 13px;'>Designed & Developed by <b>Hashim M A</b></p>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 4. MAIN SCREEN (പ്രധാന ചാറ്റ് സ്ക്രീൻ)
+# 5. MAIN SCREEN (പ്രധാന ചാറ്റ് സ്ക്രീൻ)
 # ---------------------------------------------------------
 st.title("Rhythm IT Helpdesk 💻")
 st.write("Ask any questions related to Laptops, Desktops, Printers, Networking, or other IT equipment in English or Malayalam. / ലാപ്ടോപ്പ്, ഡെസ്ക്ടോപ്പ്, പ്രിൻ്റർ, നെറ്റ്‌വർക്കിംഗ് സംശയങ്ങൾ മലയാളത്തിലോ ഇംഗ്ലീഷിലോ ചോദിക്കാം.")
