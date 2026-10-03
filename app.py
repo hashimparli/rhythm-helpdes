@@ -16,8 +16,8 @@ Your expertise includes Laptops, Desktops, Printers (Installation, spooler issue
 Provide step-by-step, practical, and highly accurate problem-solving help. 
 CRITICAL RULE: If the user asks the question in Malayalam, you MUST reply in fluent Malayalam. If the user asks in English, reply in English.
 """
-# ഏറ്റവും പുതിയ മോഡൽ ഉപയോഗിക്കുന്നു
-model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=system_instruction)
+# മോഡലിന്റെ പേര് അപ്‌ഡേറ്റ് ചെയ്തു
+model = genai.GenerativeModel('gemini-1.5-flash-latest', system_instruction=system_instruction)
 
 # 1. Page Configuration
 st.set_page_config(page_title="Rhythm IT Helpdesk", page_icon="logo.jpg", layout="centered")
@@ -45,7 +45,6 @@ st.markdown("""
         border: 1.5px solid #0033cc;
     }
     
-    /* Fork, GitHub തുടങ്ങിയവ ഒളിപ്പിക്കാനുള്ള കോഡ് */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
@@ -119,7 +118,6 @@ if prompt := st.chat_input("Type your problem here / നിങ്ങളുടെ
                 st.markdown(response.text)
                 st.session_state.messages.append({"role": "assistant", "content": response.text})
             except Exception as e:
-                # ലിമിറ്റ് കഴിഞ്ഞാലുള്ള പുതിയ എറർ മെസ്സേജ്
                 error_msg = str(e)
                 if "429" in error_msg or "Quota" in error_msg:
                     st.error("⚠️ സിസ്റ്റം ഇപ്പോൾ അല്പം തിരക്കിലാണ് (Usage Limit Reached). ദയവായി ഒരു മിനിറ്റ് കാത്തിരുന്ന ശേഷം വീണ്ടും ചോദിക്കുക.")
