@@ -114,7 +114,7 @@ with st.sidebar:
 # 5. MAIN SCREEN (പ്രധാന ചാറ്റ് സ്ക്രീൻ)
 # ---------------------------------------------------------
 st.title("Rhythm IT Helpdesk 💻")
-st.write("Ask any questions related to IT equipment. You can type or use your **Keyboard Mic 🎤** for voice input.")
+st.write("Ask any questions related to Laptops, Desktops, Printers, Networking, or other IT equipment in English or Malayalam. / ലാപ്ടോപ്പ്, ഡെസ്ക്ടോപ്പ്, പ്രിൻ്റർ, നെറ്റ്‌വർക്കിംഗ് സംശയങ്ങൾ മലയാളത്തിലോ ഇംഗ്ലീഷിലോ ചോദിക്കാം. (You can type or use your **Keyboard Mic 🎤** for voice input)")
 st.markdown("---")
 
 for message in st.session_state.messages:
