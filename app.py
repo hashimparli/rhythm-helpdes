@@ -2,7 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 from PIL import Image
 
-# API Key സുരക്ഷിതമായി നൽകാൻ 
+# API Key
 try:
     api_key = st.secrets["GOOGLE_API_KEY"]
 except:
@@ -10,19 +10,41 @@ except:
 
 genai.configure(api_key=api_key)
 
+# ---------------------------------------------------------
+# 1. AUTO-DETECT AVAILABLE MODEL
+# ---------------------------------------------------------
+# ലഭ്യമായ ഏറ്റവും മികച്ച മോഡൽ കോഡ് സ്വയം തിരഞ്ഞെടുക്കുന്നു
+selected_model = 'gemini-1.5-flash'
+try:
+    available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+    if 'models/gemini-1.5-flash' in available_models:
+        selected_model = 'gemini-1.5-flash'
+    elif 'models/gemini-1.5-pro' in available_models:
+        selected_model = 'gemini-1.5-pro'
+    elif 'models/gemini-pro' in available_models:
+        selected_model = 'gemini-pro'
+    elif available_models:
+        selected_model = available_models[0].replace('models/', '')
+except Exception:
+    pass
+
 system_instruction = """
 You are an expert Level-3 IT Support Engineer representing 'Rhythm Computer Solutions'. 
 Your expertise includes Laptops, Desktops, Printers (Installation, spooler issues, paper jams), Networking (Routers, Switches, LAN/WAN setup, IP conflicts), and general IT hardware troubleshooting.
 Provide step-by-step, practical, and highly accurate problem-solving help. 
 CRITICAL RULE: If the user asks the question in Malayalam, you MUST reply in fluent Malayalam. If the user asks in English, reply in English.
 """
-# മോഡലിന്റെ കൃത്യമായ വേർഷൻ നമ്പർ നൽകുന്നു (ഇവിടെയാണ് മാറ്റം വരുത്തിയത്)
-model = genai.GenerativeModel('gemini-1.5-flash-001', system_instruction=system_instruction)
 
-# 1. Page Configuration
+try:
+    model = genai.GenerativeModel(selected_model, system_instruction=system_instruction)
+except:
+    model = genai.GenerativeModel(selected_model)
+
+# ---------------------------------------------------------
+# 2. PAGE CONFIG & CSS
+# ---------------------------------------------------------
 st.set_page_config(page_title="Rhythm IT Helpdesk", page_icon="logo.jpg", layout="centered")
 
-# 2. Modern Colorful CSS & Hiding Deploy Buttons 
 st.markdown("""
 <style>
     .stButton>button {
@@ -44,21 +66,22 @@ st.markdown("""
         border-radius: 8px;
         border: 1.5px solid #0033cc;
     }
-    
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
-# 3. Chat History Initializing
+# ---------------------------------------------------------
+# 3. CHAT INITIALIZATION
+# ---------------------------------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "chat_session" not in st.session_state:
     st.session_state.chat_session = model.start_chat(history=[])
 
 # ---------------------------------------------------------
-# 4. SIDEBAR (എപ്പോഴും സ്ക്രീനിൽ കാണാനുള്ള ഭാഗം)
+# 4. SIDEBAR
 # ---------------------------------------------------------
 with st.sidebar:
     st.image("logo.jpg", width=120)
@@ -70,9 +93,7 @@ with st.sidebar:
         st.rerun()
         
     st.markdown("---")
-    
     uploaded_file = st.file_uploader("Upload Screenshot (Optional) / സ്ക്രീൻഷോട്ട് നൽകാൻ", type=["jpg", "jpeg", "png"])
-    
     st.markdown("---")
     
     st.markdown("### 📞 Contact for Services")
@@ -82,15 +103,13 @@ with st.sidebar:
     📱 +91 7559923809  
     📧 rythmcomputerpkd@gmail.com
     """)
-    
     st.markdown("---")
-    
     st.info("⏱️ **Usage Limit:** Maximum 15 queries per minute.")
-    st.warning("⚠️ **Disclaimer:** Strictly for IT-related support. Searching for illegal content is prohibited.")
-    st.markdown("<p style='text-align: center; color: gray; font-size: 13px;'>Designed & Developed by <b>Hashim M A</b></p>", unsafe_allow_html=True)
+    st.warning("⚠️ **Disclaimer:** Strictly for IT-related support.")
+    st.markdown(f"<p style='text-align: center; color: gray; font-size: 13px;'>Model: {selected_model}<br>Designed & Developed by <b>Hashim M A</b></p>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 5. MAIN SCREEN (പ്രധാന ചാറ്റ് സ്ക്രീൻ)
+# 5. MAIN SCREEN
 # ---------------------------------------------------------
 st.title("Rhythm IT Helpdesk 💻")
 st.write("Ask any questions related to Laptops, Desktops, Printers, Networking, or other IT equipment in English or Malayalam. / ലാപ്ടോപ്പ്, ഡെസ്ക്ടോപ്പ്, പ്രിൻ്റർ, നെറ്റ്‌വർക്കിംഗ് സംശയങ്ങൾ മലയാളത്തിലോ ഇംഗ്ലീഷിലോ ചോദിക്കാം.")
@@ -101,7 +120,6 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 if prompt := st.chat_input("Type your problem here / നിങ്ങളുടെ പ്രശ്നം ഇവിടെ ടൈപ്പ് ചെയ്യുക..."):
-    
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
