@@ -17,16 +17,16 @@ Provide step-by-step, practical, and highly accurate problem-solving help.
 CRITICAL RULE: If the user asks the question in Malayalam, you MUST reply in fluent Malayalam. If the user asks in English, reply in English.
 """
 
-# ഗൂഗിൾ എറർ മെസ്സേജിൽ നിർദ്ദേശിച്ച ഏറ്റവും പുതിയ മോഡൽ നൽകുന്നു
+# ഏറ്റവും പുതിയ മോഡൽ നൽകുന്നു
 model = genai.GenerativeModel('gemini-3.8-flash', system_instruction=system_instruction)
 
 # 1. Page Configuration
 st.set_page_config(page_title="Rhythm IT Helpdesk", page_icon="logo.jpg", layout="centered")
 
-# 2. Modern Colorful CSS & Hiding Deploy Buttons 
+# 2. Modern Colorful CSS (Download ബട്ടൺ ഡിസൈൻ കൂടി ഉൾപ്പെടുത്തിയിട്ടുണ്ട്)
 st.markdown("""
 <style>
-    .stButton>button {
+    .stButton>button, .stDownloadButton>button {
         background-color: #0033cc;
         color: white;
         border-radius: 8px;
@@ -36,7 +36,7 @@ st.markdown("""
         transition: 0.3s;
         width: 100%;
     }
-    .stButton>button:hover {
+    .stButton>button:hover, .stDownloadButton>button:hover {
         background-color: #002299;
         color: white;
         box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
@@ -58,6 +58,15 @@ if "messages" not in st.session_state:
 if "chat_session" not in st.session_state:
     st.session_state.chat_session = model.start_chat(history=[])
 
+# ചാറ്റ് ഹിസ്റ്ററി ഡൗൺലോഡ് ചെയ്യാനുള്ള ഫംഗ്ഷൻ
+def get_chat_history():
+    history_str = "Rhythm IT Helpdesk - Chat History\n"
+    history_str += "="*40 + "\n\n"
+    for msg in st.session_state.messages:
+        role = "You" if msg["role"] == "user" else "Rhythm Support"
+        history_str += f"{role}: {msg['content']}\n\n"
+    return history_str
+
 # ---------------------------------------------------------
 # 4. SIDEBAR (എപ്പോഴും സ്ക്രീനിൽ കാണാനുള്ള ഭാഗം)
 # ---------------------------------------------------------
@@ -72,6 +81,17 @@ with st.sidebar:
         
     st.markdown("---")
     
+    # ചാറ്റ് തുടങ്ങിയാൽ മാത്രം History ബട്ടൺ കാണിക്കാൻ
+    if st.session_state.messages:
+        st.download_button(
+            label="📥 Download History / ഹിസ്റ്ററി സേവ് ചെയ്യാൻ",
+            data=get_chat_history(),
+            file_name="Rhythm_IT_Support_History.txt",
+            mime="text/plain",
+            use_container_width=True
+        )
+        st.markdown("---")
+        
     uploaded_file = st.file_uploader("Upload Screenshot (Optional) / സ്ക്രീൻഷോട്ട് നൽകാൻ", type=["jpg", "jpeg", "png"])
     
     st.markdown("---")
@@ -94,7 +114,7 @@ with st.sidebar:
 # 5. MAIN SCREEN (പ്രധാന ചാറ്റ് സ്ക്രീൻ)
 # ---------------------------------------------------------
 st.title("Rhythm IT Helpdesk 💻")
-st.write("Ask any questions related to Laptops, Desktops, Printers, Networking, or other IT equipment in English or Malayalam. / ലാപ്ടോപ്പ്, ഡെസ്ക്ടോപ്പ്, പ്രിൻ്റർ, നെറ്റ്‌വർക്കിംഗ് സംശയങ്ങൾ മലയാളത്തിലോ ഇംഗ്ലീഷിലോ ചോദിക്കാം.")
+st.write("Ask any questions related to IT equipment. You can type or use your **Keyboard Mic 🎤** for voice input.")
 st.markdown("---")
 
 for message in st.session_state.messages:
