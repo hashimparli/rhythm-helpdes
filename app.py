@@ -16,8 +16,8 @@ Your expertise includes Laptops, Desktops, Printers (Installation, spooler issue
 Provide step-by-step, practical, and highly accurate problem-solving help. 
 CRITICAL RULE: If the user asks the question in Malayalam, you MUST reply in fluent Malayalam. If the user asks in English, reply in English.
 """
-# മോഡലിന്റെ പേര് അപ്‌ഡേറ്റ് ചെയ്തു
-model = genai.GenerativeModel('gemini-1.5-flash-latest', system_instruction=system_instruction)
+# മോഡലിന്റെ കൃത്യമായ വേർഷൻ നമ്പർ നൽകുന്നു (ഇവിടെയാണ് മാറ്റം വരുത്തിയത്)
+model = genai.GenerativeModel('gemini-1.5-flash-001', system_instruction=system_instruction)
 
 # 1. Page Configuration
 st.set_page_config(page_title="Rhythm IT Helpdesk", page_icon="logo.jpg", layout="centered")
