@@ -23,7 +23,7 @@ model = genai.GenerativeModel('gemini-3.8-flash', system_instruction=system_inst
 # 1. Page Configuration
 st.set_page_config(page_title="Rhythm IT Helpdesk", page_icon="logo.jpg", layout="centered")
 
-# 2. Modern Colorful CSS (Download ബട്ടൺ ഡിസൈൻ കൂടി ഉൾപ്പെടുത്തിയിട്ടുണ്ട്)
+# 2. Modern Colorful CSS (മൊബൈൽ മെനു കാണാൻ ഹെഡർ ഹൈഡ് ചെയ്തിട്ടില്ല)
 st.markdown("""
 <style>
     .stButton>button, .stDownloadButton>button {
@@ -48,7 +48,6 @@ st.markdown("""
     
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-   
 </style>
 """, unsafe_allow_html=True)
 
@@ -58,7 +57,7 @@ if "messages" not in st.session_state:
 if "chat_session" not in st.session_state:
     st.session_state.chat_session = model.start_chat(history=[])
 
-# ചാറ്റ് ഹിസ്റ്ററി ഡൗൺലോഡ് ചെയ്യാനുള്ള ഫംഗ്ഷൻ
+# ചാറ്റ് ഹിസ്റ്ററി തയ്യാറാക്കാനുള്ള ഫംഗ്ഷൻ
 def get_chat_history():
     history_str = "Rhythm IT Helpdesk - Chat History\n"
     history_str += "="*40 + "\n\n"
@@ -81,17 +80,9 @@ with st.sidebar:
         
     st.markdown("---")
     
-    # ചാറ്റ് തുടങ്ങിയാൽ മാത്രം History ബട്ടൺ കാണിക്കാൻ
-    if st.session_state.messages:
-        st.download_button(
-            label="📥 Download History / ഹിസ്റ്ററി സേവ് ചെയ്യാൻ",
-            data=get_chat_history(),
-            file_name="Rhythm_IT_Support_History.txt",
-            mime="text/plain",
-            use_container_width=True
-        )
-        st.markdown("---")
-        
+    # ഡൗൺലോഡ് ബട്ടൺ കാണിക്കാൻ വേണ്ടി മാറ്റിവെച്ച സ്ഥലം (Placeholder)
+    history_placeholder = st.empty()
+    
     uploaded_file = st.file_uploader("Upload Screenshot (Optional) / സ്ക്രീൻഷോട്ട് നൽകാൻ", type=["jpg", "jpeg", "png"])
     
     st.markdown("---")
@@ -144,3 +135,18 @@ if prompt := st.chat_input("Type your problem here / നിങ്ങളുടെ
                     st.error("⚠️ സിസ്റ്റം ഇപ്പോൾ അല്പം തിരക്കിലാണ് (Usage Limit Reached). ദയവായി ഒരു മിനിറ്റ് കാത്തിരുന്ന ശേഷം വീണ്ടും ചോദിക്കുക.")
                 else:
                     st.error(f"API Error: ദയവായി പ്രശ്നം പരിഹരിക്കാൻ അല്പസമയം നൽകുക. ({e})")
+
+# ---------------------------------------------------------
+# 6. UPDATE HISTORY BUTTON (ഏറ്റവും അവസാനം അപ്ഡേറ്റ് ചെയ്യുന്നു)
+# ---------------------------------------------------------
+# ചാറ്റ് സേവ് ആയതിന് ശേഷം മാത്രം ഡൗൺലോഡ് ബട്ടൺ വരാനുള്ള കോഡ്
+if st.session_state.messages:
+    with history_placeholder:
+        st.download_button(
+            label="📥 Download History / ഹിസ്റ്ററി ഡൗൺലോഡ്",
+            data=get_chat_history(),
+            file_name="Rhythm_IT_Support_History.txt",
+            mime="text/plain",
+            use_container_width=True
+        )
+        st.markdown("---")
