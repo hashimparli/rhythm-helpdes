@@ -23,7 +23,7 @@ model = genai.GenerativeModel('gemini-3.8-flash', system_instruction=system_inst
 # 1. Page Configuration
 st.set_page_config(page_title="Rhythm IT Helpdesk", page_icon="logo.jpg", layout="centered")
 
-# 2. Modern Colorful CSS (മൊബൈൽ മെനു കാണാൻ ഹെഡർ ഹൈഡ് ചെയ്തിട്ടില്ല)
+# 2. Modern Colorful CSS
 st.markdown("""
 <style>
     .stButton>button, .stDownloadButton>button {
@@ -57,7 +57,6 @@ if "messages" not in st.session_state:
 if "chat_session" not in st.session_state:
     st.session_state.chat_session = model.start_chat(history=[])
 
-# ചാറ്റ് ഹിസ്റ്ററി തയ്യാറാക്കാനുള്ള ഫംഗ്ഷൻ
 def get_chat_history():
     history_str = "Rhythm IT Helpdesk - Chat History\n"
     history_str += "="*40 + "\n\n"
@@ -67,7 +66,7 @@ def get_chat_history():
     return history_str
 
 # ---------------------------------------------------------
-# 4. SIDEBAR (എപ്പോഴും സ്ക്രീനിൽ കാണാനുള്ള ഭാഗം)
+# 4. SIDEBAR 
 # ---------------------------------------------------------
 with st.sidebar:
     st.image("logo.jpg", width=120)
@@ -76,11 +75,12 @@ with st.sidebar:
     if st.button("🔄 New Chat / പുതിയ ചോദ്യം", use_container_width=True):
         st.session_state.messages = []
         st.session_state.chat_session = model.start_chat(history=[])
+        if "last_audio" in st.session_state:
+            del st.session_state["last_audio"]
         st.rerun()
         
     st.markdown("---")
     
-    # ഡൗൺലോഡ് ബട്ടൺ കാണിക്കാൻ വേണ്ടി മാറ്റിവെച്ച സ്ഥലം (Placeholder)
     history_placeholder = st.empty()
     
     uploaded_file = st.file_uploader("Upload Screenshot (Optional) / സ്ക്രീൻഷോട്ട് നൽകാൻ", type=["jpg", "jpeg", "png"])
@@ -102,16 +102,47 @@ with st.sidebar:
     st.markdown("<p style='text-align: center; color: gray; font-size: 13px;'>Designed & Developed by <b>Hashim M A</b></p>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 5. MAIN SCREEN (പ്രധാന ചാറ്റ് സ്ക്രീൻ)
+# 5. MAIN SCREEN 
 # ---------------------------------------------------------
 st.title("Rhythm IT Helpdesk 💻")
-st.write("Ask any questions related to Laptops, Desktops, Printers, Networking, or other IT equipment in English or Malayalam. / ലാപ്ടോപ്പ്, ഡെസ്ക്ടോപ്പ്, പ്രിൻ്റർ, നെറ്റ്‌വർക്കിംഗ് സംശയങ്ങൾ മലയാളത്തിലോ ഇംഗ്ലീഷിലോ ചോദിക്കാം. (You can type or use your **Keyboard Mic 🎤** for voice input)")
+
+# നിങ്ങൾ ആവശ്യപ്പെട്ടതുപോലെ പഴയ വാചകം മാറ്റിയിട്ടുണ്ട് 
+st.write("Ask any questions related to Laptops, Desktops, Printers, Networking, or other IT equipment in English or Malayalam. / ലാപ്ടോപ്പ്, ഡെസ്ക്ടോപ്പ്, പ്രിൻ്റർ, നെറ്റ്‌വർക്കിംഗ് സംശയങ്ങൾ മലയാളത്തിലോ ഇംഗ്ലീഷിലോ ചോദിക്കാം.")
 st.markdown("---")
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
+# --- പുതിയ VOICE INPUT ഫീച്ചർ ---
+audio_file = st.audio_input("🎤 Record a Voice Message / ശബ്ദത്തിലൂടെ ചോദിക്കാൻ")
+
+if audio_file and ("last_audio" not in st.session_state or st.session_state.last_audio != audio_file.file_id):
+    st.session_state.last_audio = audio_file.file_id
+    
+    st.session_state.messages.append({"role": "user", "content": "🎤 (Voice Message)"})
+    with st.chat_message("user"):
+        st.markdown("🎤 (Voice Message)")
+        
+    with st.chat_message("assistant"):
+        with st.spinner("Listening to your audio... / ശബ്ദം കേൾക്കുന്നു..."):
+            try:
+                audio_part = {"mime_type": "audio/wav", "data": audio_file.getvalue()}
+                content_to_send = [audio_part]
+                if uploaded_file is not None:
+                    content_to_send.append(Image.open(uploaded_file))
+                    
+                response = st.session_state.chat_session.send_message(content_to_send)
+                st.markdown(response.text)
+                st.session_state.messages.append({"role": "assistant", "content": response.text})
+            except Exception as e:
+                error_msg = str(e)
+                if "429" in error_msg or "Quota" in error_msg:
+                    st.error("⚠️️ സിസ്റ്റം ഇപ്പോൾ അല്പം തിരക്കിലാണ് (Usage Limit Reached). ദയവായി കാത്തിരിക്കുക.")
+                else:
+                    st.error(f"API Error: {e}")
+
+# --- സാധാരണ TEXT INPUT ഫീച്ചർ ---
 if prompt := st.chat_input("Type your problem here / നിങ്ങളുടെ പ്രശ്നം ഇവിടെ ടൈപ്പ് ചെയ്യുക..."):
     
     st.session_state.messages.append({"role": "user", "content": prompt})
@@ -121,11 +152,11 @@ if prompt := st.chat_input("Type your problem here / നിങ്ങളുടെ
     with st.chat_message("assistant"):
         with st.spinner("Finding the best solution... / ഉത്തരം കണ്ടെത്തുന്നു..."):
             try:
+                content_to_send = [prompt]
                 if uploaded_file is not None:
-                    image = Image.open(uploaded_file)
-                    response = st.session_state.chat_session.send_message([prompt, image])
-                else:
-                    response = st.session_state.chat_session.send_message(prompt)
+                    content_to_send.append(Image.open(uploaded_file))
+                    
+                response = st.session_state.chat_session.send_message(content_to_send)
                 
                 st.markdown(response.text)
                 st.session_state.messages.append({"role": "assistant", "content": response.text})
@@ -137,9 +168,8 @@ if prompt := st.chat_input("Type your problem here / നിങ്ങളുടെ
                     st.error(f"API Error: ദയവായി പ്രശ്നം പരിഹരിക്കാൻ അല്പസമയം നൽകുക. ({e})")
 
 # ---------------------------------------------------------
-# 6. UPDATE HISTORY BUTTON (ഏറ്റവും അവസാനം അപ്ഡേറ്റ് ചെയ്യുന്നു)
+# 6. UPDATE HISTORY BUTTON 
 # ---------------------------------------------------------
-# ചാറ്റ് സേവ് ആയതിന് ശേഷം മാത്രം ഡൗൺലോഡ് ബട്ടൺ വരാനുള്ള കോഡ്
 if st.session_state.messages:
     with history_placeholder:
         st.download_button(
