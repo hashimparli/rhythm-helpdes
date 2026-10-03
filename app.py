@@ -1,8 +1,6 @@
 import streamlit as st
 import google.generativeai as genai
 from PIL import Image
-import tempfile
-import os
 
 # API Key സുരക്ഷിതമായി നൽകാൻ 
 try:
@@ -77,8 +75,6 @@ with st.sidebar:
     if st.button("🔄 New Chat / പുതിയ ചോദ്യം", use_container_width=True):
         st.session_state.messages = []
         st.session_state.chat_session = model.start_chat(history=[])
-        if "last_audio" in st.session_state:
-            del st.session_state["last_audio"]
         st.rerun()
         
     st.markdown("---")
@@ -99,7 +95,7 @@ with st.sidebar:
     
     st.markdown("---")
     
-    st.info("⏱️ **Usage Limit:** Maximum 15 queries per minute.")
+    st.info("⏱️️ **Usage Limit:** Maximum 15 queries per minute.")
     st.warning("⚠️ **Disclaimer:** Strictly for IT-related support.")
     st.markdown("<p style='text-align: center; color: gray; font-size: 13px;'>Designed & Developed by <b>Hashim M A</b></p>", unsafe_allow_html=True)
 
@@ -114,41 +110,6 @@ st.markdown("---")
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
-
-# --- പുതിയ VOICE INPUT ഫീച്ചർ (സുരക്ഷിതമായ അപ്‌ലോഡ് രീതി) ---
-audio_file = st.audio_input("🎤 Record a Voice Message / ശബ്ദത്തിലൂടെ ചോദിക്കാൻ")
-
-if audio_file and ("last_audio" not in st.session_state or st.session_state.last_audio != audio_file.file_id):
-    st.session_state.last_audio = audio_file.file_id
-    
-    st.session_state.messages.append({"role": "user", "content": "🎤 (Voice Message)"})
-    with st.chat_message("user"):
-        st.markdown("🎤 (Voice Message)")
-        
-    with st.chat_message("assistant"):
-        with st.spinner("Listening to your audio... / ശബ്ദം കേൾക്കുന്നു..."):
-            try:
-                # ഓഡിയോ ഫയൽ ടെമ്പററി ആയി സേവ് ചെയ്ത് ഗൂഗിളിലേക്ക് ഔദ്യോഗികമായി അപ്‌ലോഡ് ചെയ്യുന്നു
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_audio:
-                    tmp_audio.write(audio_file.getvalue())
-                    tmp_audio_path = tmp_audio.name
-                    
-                gemini_audio = genai.upload_file(tmp_audio_path)
-                
-                content_to_send = [gemini_audio]
-                if uploaded_file is not None:
-                    content_to_send.append(Image.open(uploaded_file))
-                    
-                response = st.session_state.chat_session.send_message(content_to_send)
-                
-                # ഉപയോഗത്തിന് ശേഷം ആ ഫയൽ ഡിലീറ്റ് ചെയ്യുന്നു
-                os.remove(tmp_audio_path)
-                
-                st.markdown(response.text)
-                st.session_state.messages.append({"role": "assistant", "content": response.text})
-            except Exception as e:
-                # യഥാർത്ഥ എറർ എന്താണെന്ന് കാണിക്കുന്നു
-                st.error(f"⚠️ Error: {e}")
 
 # --- സാധാരണ TEXT INPUT ഫീച്ചർ ---
 if prompt := st.chat_input("Type your problem here / നിങ്ങളുടെ പ്രശ്നം ഇവിടെ ടൈപ്പ് ചെയ്യുക..."):
@@ -169,7 +130,11 @@ if prompt := st.chat_input("Type your problem here / നിങ്ങളുടെ
                 st.markdown(response.text)
                 st.session_state.messages.append({"role": "assistant", "content": response.text})
             except Exception as e:
-                st.error(f"⚠️ Error: {e}")
+                error_msg = str(e)
+                if "429" in error_msg or "Quota" in error_msg:
+                    st.error("⚠️ സിസ്റ്റം ഇപ്പോൾ അല്പം തിരക്കിലാണ് (Usage Limit Reached). ദയവായി ഒരു മിനിറ്റ് കാത്തിരുന്ന ശേഷം വീണ്ടും ചോദിക്കുക.")
+                else:
+                    st.error(f"⚠️ Error: {e}")
 
 # ---------------------------------------------------------
 # 6. UPDATE HISTORY BUTTON 
